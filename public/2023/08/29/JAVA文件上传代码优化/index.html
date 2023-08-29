@@ -6,13 +6,26 @@
   <meta http-equiv="cache-control" content="no-cache">
   <meta http-equiv="expires" content="0">
   
-  <title>美丽的大花</title>
+  <title>JAVA文件上传代码优化 | 美丽的大花</title>
   <meta name="author" content="yrq">
+  
+  <meta name="description" content="什么是文件上传？就是从客户端上传文件供他人下载或者展示给他人。
+那么我们首先就需要把代码上传到服务器上面。以下拿图片文件作为例子：
+在springboot中，为了方便，已经有写好的MultiparFile可以提供给我们使用。他的作用就是作为图片文件接收的对象。
+1234567891011121314@Slf4j@RestControllerpublic class UploadController &amp;#123;    @PostMapping(&amp;quot;/upload&amp;quot;)    public Result upload(String username, Integer age, MultipartFile image) throws IOException &amp;#123;				//生成日志        log.info(&amp;quot;文件上传：&amp;#123;&amp;#125;,&amp;#123;&amp;#125;,&amp;#123;&amp;#125;&amp;quot;, username, age, image);        //通过getOriginalFilename()方法，获得image的文件名称        String originalFilename = image.getOriginalFilename();      	//将文件放到指定的磁盘目录        image.transferTo(new File(&amp;quot;/Users/yrq/Downloads/文件上传/&amp;quot; + originalFilename));        return Result.success();    &amp;#125;&amp;#125;
+
+这样，一个文件上传的代码我们就写好了。代码写好的同时，问题也随之而来。
+问题一，如果同一时间有两个人上传同一个文件该怎么办呢？其结果就是，后一个上传的文件会覆盖上一个上传的文件。
+问题二，如果传输的文件超过1mb的限制了该怎么办呢？
+这里，我们先解决第一个问题。优化问题一的代码如下：
+1234567891011121314151617181920212223@Slf4j@RestControllerpublic class UploadController &amp;#123;    @PostMapping(&amp;quot;/upload&amp;quot;)    public Result upload(String username, Integer age, MultipartFile image) throws IOException &amp;#123;        //打印日志      	log.info(&amp;quot;文件上传：&amp;#123;&amp;#125;,&amp;#123;&amp;#125;,&amp;#123;&amp;#125;&amp;quot;, username, age, image);        String originalFilename = image.getOriginalFilename();        //构造唯一的文件名（不能重复）--uuid（通用唯一识别码）        //首先寻找到后缀名前面的那个.的索引        int index = originalFilename.lastIndexOf(&amp;quot;.&amp;quot;);        //然后分割出index索引后面的字符串        String extname = originalFilename.substring(index);        //然后进行拼接        String newFileName = UUID.randomUUID().toString() + extname;        //打印日志        log.info(&amp;quot;新的文件名:&amp;#123;&amp;#125;&amp;quot;,newFileName);      	//调用方法将文件储存在磁盘制定目录里面        image.transferTo(new File(&amp;quot;/Users/yrq/Downloads/文件上传/&amp;quot; + newFileName));        return Result.success();    &amp;#125;&amp;#125;
+
+向这样，就能解决同一时间两个或多个人上传同一文件的问题。"> 
   
   
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
-  
+  <meta property="og:title" content="JAVA文件上传代码优化"/>
   <meta property="og:site_name" content="美丽的大花"/>
 
   
@@ -107,89 +120,29 @@
 
   <div class="container">
   	<div class="content">
-    	 <div class="page-header logo">
-  <h1>美丽的大花<span class="blink-fast">|</span></h1>
-</div>
+    	 
 
-<div class="row page">
 
 	
+		<div class="page-header">
+			<h1> JAVA文件上传代码优化</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
 	<div class="col-md-9">
 	
 
-		<div class="slogan">
+	<!-- content -->
+	<div class="mypage">		
+	  		
 
-
-		<i class="fa fa-heart blink-slow"></i>
-
-		仿生人会梦见电子羊吗？
-
-</div>    
-
-		<div id="top_search"></div>
-		<div class="mypage">
-		
-		<!-- title and entry -->
-		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2023/08/29/JAVA之预编SQL/" >JAVA之预编译SQL</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2023-08-29  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<p>JAVA之预编SQL</p>
-<p>预编译SQL能有效的防止sql注入问题。那么首先我们会想到，什么是sql注入。</p>
-<p>sql注入就是利用sql语法上的漏洞，进行注入攻击，能够到达获取数据库信息，或者是在不知道密码的情况下，直接登入网站后台的效果。其攻击方式可以分为：联合查询注入，时间盲注，布尔盲注，堆叠注入，分块注入，DNSlog回显注入，报错注入。下面，我们列举一个最简单的sql注入的例子。</p>
-<p>比如：系统中存在一个最简单的sql注入的漏洞，我们可以利用语法上的错误，将密码那一栏写成：</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;or 1=&#x27;1</span><br></pre></td></tr></table></figure>
-
-<p>那么实际上这条命令传递到后端之后再经过后端发送到服务器上面，这段语句就变成了：</p>
-<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> 表名 <span class="keyword">where</span> username <span class="operator">=</span> <span class="string">&#x27;admin&#x27;</span> <span class="keyword">or</span> password <span class="operator">=</span> <span class="string">&#x27;1&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;1&#x27;</span>;</span><br></pre></td></tr></table></figure>
-
-<p>这段话的意思就是password恒等于1，恒为true，所以不管怎么样，都能从数据库中查到东西。</p>
-<p>这样，一个简单的sql注入就完成了。</p>
-<p>那么，怎么解决此类问题呢？</p>
-	
-	</div>
-  <a type="button" href="/2023/08/29/JAVA之预编SQL/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
-			
-	
-	<!-- display as entry -->
-<div class="row">
-	<div class="col-md-8">
-		<h3 class="title">
-			<a href="/2023/08/29/JAVA文件上传代码优化/" >JAVA文件上传代码优化</a>
-		</h3>
-		</div>
-	<div class="col-md-4">
-		<div class="date">post @ 2023-08-29  </div>
-		</div>
-	</div>
-	
-
-
-			<div class="entry">
-  <div class="row">
-	
-	
-		<p>什么是文件上传？就是从客户端上传文件供他人下载或者展示给他人。</p>
+	  <p>什么是文件上传？就是从客户端上传文件供他人下载或者展示给他人。</p>
 <p>那么我们首先就需要把代码上传到服务器上面。以下拿图片文件作为例子：</p>
 <p>在springboot中，为了方便，已经有写好的MultiparFile可以提供给我们使用。他的作用就是作为图片文件接收的对象。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UploadController</span> &#123;</span><br><span class="line">    <span class="meta">@PostMapping(&quot;/upload&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">upload</span><span class="params">(String username, Integer age, MultipartFile image)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">				<span class="comment">//生成日志</span></span><br><span class="line">        log.info(<span class="string">&quot;文件上传：&#123;&#125;,&#123;&#125;,&#123;&#125;&quot;</span>, username, age, image);</span><br><span class="line">        <span class="comment">//通过getOriginalFilename()方法，获得image的文件名称</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">originalFilename</span> <span class="operator">=</span> image.getOriginalFilename();</span><br><span class="line">      	<span class="comment">//将文件放到指定的磁盘目录</span></span><br><span class="line">        image.transferTo(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/Users/yrq/Downloads/文件上传/&quot;</span> + originalFilename));</span><br><span class="line">        <span class="keyword">return</span> Result.success();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
@@ -201,84 +154,117 @@
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Slf4j</span></span><br><span class="line"><span class="meta">@RestController</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">UploadController</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@PostMapping(&quot;/upload&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> Result <span class="title function_">upload</span><span class="params">(String username, Integer age, MultipartFile image)</span> <span class="keyword">throws</span> IOException &#123;</span><br><span class="line">        <span class="comment">//打印日志</span></span><br><span class="line">      	log.info(<span class="string">&quot;文件上传：&#123;&#125;,&#123;&#125;,&#123;&#125;&quot;</span>, username, age, image);</span><br><span class="line">        <span class="type">String</span> <span class="variable">originalFilename</span> <span class="operator">=</span> image.getOriginalFilename();</span><br><span class="line">        <span class="comment">//构造唯一的文件名（不能重复）--uuid（通用唯一识别码）</span></span><br><span class="line">        <span class="comment">//首先寻找到后缀名前面的那个.的索引</span></span><br><span class="line">        <span class="type">int</span> <span class="variable">index</span> <span class="operator">=</span> originalFilename.lastIndexOf(<span class="string">&quot;.&quot;</span>);</span><br><span class="line">        <span class="comment">//然后分割出index索引后面的字符串</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">extname</span> <span class="operator">=</span> originalFilename.substring(index);</span><br><span class="line">        <span class="comment">//然后进行拼接</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">newFileName</span> <span class="operator">=</span> UUID.randomUUID().toString() + extname;</span><br><span class="line">        <span class="comment">//打印日志</span></span><br><span class="line">        log.info(<span class="string">&quot;新的文件名:&#123;&#125;&quot;</span>,newFileName);</span><br><span class="line">      	<span class="comment">//调用方法将文件储存在磁盘制定目录里面</span></span><br><span class="line">        image.transferTo(<span class="keyword">new</span> <span class="title class_">File</span>(<span class="string">&quot;/Users/yrq/Downloads/文件上传/&quot;</span> + newFileName));</span><br><span class="line">        <span class="keyword">return</span> Result.success();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>向这样，就能解决同一时间两个或多个人上传同一文件的问题。</p>
+<p>解决问题二的方法，我们可以在springboot的application.properties配置文件下加入这两条设置：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"></span><br></pre></td></tr></table></figure>
+
+
+	  <div class="article-footer-copyright">
+
+    本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a>
+</div>
+
+	</div>
+
+	
+	
+		 <span  data-path="/2023/08/29/JAVA%E6%96%87%E4%BB%B6%E4%B8%8A%E4%BC%A0%E4%BB%A3%E7%A0%81%E4%BC%98%E5%8C%96/" >
+			<em class="post-meta-item-text"> Page View   <i class="waline-pageview-count"></i></em>
+		</span>
+
+	  
+	<div>
+  	<center>
+
+	<div class="pagination">
+
+    
+    
+    <a href="/2023/08/29/JAVA之预编SQL/" type="button" class="btn btn-default"><i
+                class="fa fa-arrow-circle-o-left"></i> Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a type="button" class="btn btn-default disabled">Next<i class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	<!--
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+-->
+	
+	
+		<section id="comments" class="comments">
+			<link
+    rel="stylesheet"
+    href="https://unpkg.com/@waline/client@v2/dist/waline.css"
+  />
+  <div id="waline"></div>
+  <script type="module">
+    import { init } from 'https://unpkg.com/@waline/client@v2/dist/waline.mjs';
+    var walineConfig = {"enable":true,"serverURL":"https://waline123-rust.vercel.app/","pageview":true,"lang":"zh-cn","dark":true,"requiredMeta":["nick","mail"],"locale":{"placeholder":"Comment with Email address will get notification when replied"}}
+    walineConfig.el='#waline';
+    init(walineConfig);
+  </script>
+
+		</section>
+	
+	
+	</div> <!-- col-md-9/col-md-12 -->
+
+
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2023-08-29 
+	</div>
+	
+
+	<!-- categories -->
+    
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
 	
 	</div>
-  <a type="button" href="/2023/08/29/JAVA文件上传代码优化/#more" class="btn btn-default more">Read More</a>
-</div>
-
-		
-
-		</div>
-
-		<!-- pagination -->
-		<div>
-  		<center>
-		<div class="pagination">
-
-   
-</div>
-
-  		</center>
-		</div>
-
-		
-		
-	</div> <!-- col-md-9 -->
-
 	
-		<div class="col-md-3">
-	<div id="sidebar">
+    <hr>
 	
-			
-  <div id="site_search">
-   <div class="form-group">
-    <input type="text" id="local-search-input" name="q" results="0" placeholder="Search" class="st-search-input st-default-search-input form-control"/>
-   </div>  
-  <div id="local-search-result"></div>
-  </div>
-
+</div><!-- col-md-3 -->
 
 		
-			
-		
-			
 
-		
-			
-<div class="widget">
-  <h4>Recent Posts</h4>
-  <ul class="entry list-unstyled">
-    
-      <li>
-        <a href="/2023/08/29/JAVA之预编SQL/" ><i class="fa fa-file-o"></i>JAVA之预编译SQL</a>
-      </li>
-    
-      <li>
-        <a href="/2023/08/29/JAVA文件上传代码优化/" ><i class="fa fa-file-o"></i>JAVA文件上传代码优化</a>
-      </li>
-    
-  </ul>
-</div>
-
-		
-			
-<div class="widget">
-	<h4>Links</h4>
-	<ul class="blogroll list-unstyled">
+	</div>
 	
-		<li><i class="false"></i><a href="https://github.com/Ares-X/hexo-theme-freemind.bithack" title="" target="_blank"]);">hexo-theme-bithack</a></li>
-	
-	</ul>
-</div>
-
-
 		
-	</div> <!-- sidebar -->
-</div> <!-- col-md-3 -->
 
-	
-	
-</div> <!-- row-fluid -->
+</div><!-- row -->
+
+<!--
+ -->
+
+
+
 	</div>
   </div>
   <div class="container-narrow">

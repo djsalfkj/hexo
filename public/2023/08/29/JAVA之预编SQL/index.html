@@ -1,0 +1,323 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="pragma" content="no-cache">
+  <meta http-equiv="cache-control" content="no-cache">
+  <meta http-equiv="expires" content="0">
+  
+  <title>JAVA之预编译SQL | 美丽的大花</title>
+  <meta name="author" content="yrq">
+  
+  <meta name="description" content="JAVA之预编SQL
+预编译SQL能有效的防止sql注入问题。那么首先我们会想到，什么是sql注入。
+sql注入就是利用sql语法上的漏洞，进行注入攻击，能够到达获取数据库信息，或者是在不知道密码的情况下，直接登入网站后台的效果。其攻击方式可以分为：联合查询注入，时间盲注，布尔盲注，堆叠注入，分块注入，DNSlog回显注入，报错注入。下面，我们列举一个最简单的sql注入的例子。
+比如：系统中存在一个最简单的sql注入的漏洞，我们可以利用语法上的错误，将密码那一栏写成：
+1&amp;#x27;or 1=&amp;#x27;1
+
+那么实际上这条命令传递到后端之后再经过后端发送到服务器上面，这段语句就变成了：
+1select * from 表名 where username = &amp;#x27;admin&amp;#x27; or password = &amp;#x27;1&amp;#x27; = &amp;#x27;1&amp;#x27;;
+
+这段话的意思就是password恒等于1，恒为true，所以不管怎么样，都能从数据库中查到东西。
+这样，一个简单的sql注入就完成了。
+那么，怎么解决此类问题呢？"> 
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <meta property="og:title" content="JAVA之预编译SQL"/>
+  <meta property="og:site_name" content="美丽的大花"/>
+
+  
+    <meta property="og:image" content=""/>
+  
+
+  
+    <link rel="alternative" href="/atom.xml" title="美丽的大花" type="application/atom+xml">
+  
+  
+    <link href="/favicon.png" rel="icon">
+  
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/font-awesome.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/style.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/responsive.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/highlight.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/prism.css" media="screen" type="text/css">
+  <link rel="stylesheet" href="/css/google-fonts.css" media="screen" type="text/css">
+  <!--[if lt IE 9]><script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script><![endif]-->
+
+  <script src="/js/jquery-2.0.3.min.js"></script>
+
+  <!-- analytics -->
+  
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-70812759-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-70812759-1');
+</script>
+
+
+
+
+
+
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+ <body>  
+  <nav id="main-nav" class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <div class="container">
+      <button type="button" class="navbar-header navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+		<span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+	  <a class="navbar-brand" href="/">美丽的大花</a>
+      <div class="collapse navbar-collapse nav-menu">
+		<ul class="nav navbar-nav">
+		  
+		  <li>
+			<a href="/archives" title="All the articles.">
+			  <i class=""></i>Archives
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/categories" title="All the categories.">
+			  <i class=""></i>Categories
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/tags" title="All the tags.">
+			  <i class=""></i>Tags
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/about" title="About me.">
+			  <i class=""></i>About
+			</a>
+		  </li>
+		  
+		  <li>
+			<a href="/atom.xml" title="Subscribe me.">
+			  <i class=""></i>RSS
+			</a>
+		  </li>
+		  
+		</ul>
+      </div>
+    </div> <!-- container -->
+</nav>
+<div class="clearfix"></div>
+
+  <div class="container">
+  	<div class="content">
+    	 
+
+
+	
+		<div class="page-header">
+			<h1> JAVA之预编译SQL</h1>
+		</div>
+	
+
+
+
+<div class="row post">
+	<!-- cols -->
+	
+	<div id="top_meta"></div>
+	<div class="col-md-9">
+	
+
+	<!-- content -->
+	<div class="mypage">		
+	  		
+
+	  <p>JAVA之预编SQL</p>
+<p>预编译SQL能有效的防止sql注入问题。那么首先我们会想到，什么是sql注入。</p>
+<p>sql注入就是利用sql语法上的漏洞，进行注入攻击，能够到达获取数据库信息，或者是在不知道密码的情况下，直接登入网站后台的效果。其攻击方式可以分为：联合查询注入，时间盲注，布尔盲注，堆叠注入，分块注入，DNSlog回显注入，报错注入。下面，我们列举一个最简单的sql注入的例子。</p>
+<p>比如：系统中存在一个最简单的sql注入的漏洞，我们可以利用语法上的错误，将密码那一栏写成：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&#x27;or 1=&#x27;1</span><br></pre></td></tr></table></figure>
+
+<p>那么实际上这条命令传递到后端之后再经过后端发送到服务器上面，这段语句就变成了：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> 表名 <span class="keyword">where</span> username <span class="operator">=</span> <span class="string">&#x27;admin&#x27;</span> <span class="keyword">or</span> password <span class="operator">=</span> <span class="string">&#x27;1&#x27;</span> <span class="operator">=</span> <span class="string">&#x27;1&#x27;</span>;</span><br></pre></td></tr></table></figure>
+
+<p>这段话的意思就是password恒等于1，恒为true，所以不管怎么样，都能从数据库中查到东西。</p>
+<p>这样，一个简单的sql注入就完成了。</p>
+<p>那么，怎么解决此类问题呢？</p>
+<p>这个时候我们就要用到预编译sql了。</p>
+<p>在预编译sql里，我们会用？来代替#{}里面的内容，比如，我不把他写死，而是在接口里面将要传递的参数写成：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Mapper</span></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">interface</span> <span class="title class_">Test</span>&#123;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">    <span class="meta">@Select(&quot;select * from user where password = #&#123;password&#125;&quot;)</span></span><br><span class="line">    <span class="keyword">public</span> List&lt;User&gt; <span class="title function_">select</span><span class="params">(String password)</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么在此时，java代码会有一个预编译的过程，将#{}用？代替，而实际上传递到数据库的参数就会变成：</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="operator">*</span> <span class="keyword">from</span> 表名 <span class="keyword">where</span> username <span class="operator">=</span> <span class="string">&#x27;admin&#x27;</span> <span class="keyword">or</span> password <span class="operator">=</span> ?</span><br></pre></td></tr></table></figure>
+
+<p>这样的话，即使你想输入上面的sql注入，其内容也会被替换成问号</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">&#x27;or 1=&#x27;</span><span class="number">1</span> 替换成 ？</span><br></pre></td></tr></table></figure>
+
+<p>这样的话，传递到数据库的查询语句就会是password &#x3D; ？ ，这样显然是不符合语法的，所以并不能查出想要的结果。</p>
+<p>自此，就可以很好的防止sql注入。</p>
+
+	  <div class="article-footer-copyright">
+
+    本博客采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/deed.zh" target="_blank">知识共享署名-非商业性使用-相同方式共享 4.0 国际许可协议(CC BY-NC-SA 4.0) 发布.</a>
+</div>
+
+	</div>
+
+	
+	
+		 <span  data-path="/2023/08/29/JAVA%E4%B9%8B%E9%A2%84%E7%BC%96SQL/" >
+			<em class="post-meta-item-text"> Page View   <i class="waline-pageview-count"></i></em>
+		</span>
+
+	  
+	<div>
+  	<center>
+
+	<div class="pagination">
+
+    
+    
+    <a type="button" class="btn btn-default disabled"><i class="fa fa-arrow-circle-o-left"></i>Prev</a>
+    
+
+    <a href="/" type="button" class="btn btn-default"><i class="fa fa-home"></i>Home</a>
+    
+    <a href="/2023/08/29/JAVA文件上传代码优化/" type="button" class="btn btn-default ">Next<i
+                class="fa fa-arrow-circle-o-right"></i></a>
+    
+
+    
+</div>
+
+
+    </center>
+	</div>
+	
+	<!-- comment -->
+	<!--
+<section id="comment">
+    <h2 class="title">Comments</h2>
+
+    
+</section>
+
+-->
+	
+	
+		<section id="comments" class="comments">
+			<link
+    rel="stylesheet"
+    href="https://unpkg.com/@waline/client@v2/dist/waline.css"
+  />
+  <div id="waline"></div>
+  <script type="module">
+    import { init } from 'https://unpkg.com/@waline/client@v2/dist/waline.mjs';
+    var walineConfig = {"enable":true,"serverURL":"https://waline123-rust.vercel.app/","pageview":true,"lang":"zh-cn","dark":true,"requiredMeta":["nick","mail"],"locale":{"placeholder":"Comment with Email address will get notification when replied"}}
+    walineConfig.el='#waline';
+    init(walineConfig);
+  </script>
+
+		</section>
+	
+	
+	</div> <!-- col-md-9/col-md-12 -->
+
+
+	
+	<div id="side_meta">
+		<div class="col-md-3" id="post_meta"> 
+
+	<!-- date -->
+	
+	<div class="meta-widget">
+	<i class="fa fa-clock-o"></i>
+	2023-08-29 
+	</div>
+	
+
+	<!-- categories -->
+    
+
+	<!-- tags -->
+		
+
+	<!-- toc -->
+	<div class="meta-widget">
+	
+	</div>
+	
+    <hr>
+	
+</div><!-- col-md-3 -->
+
+		
+
+	</div>
+	
+		
+
+</div><!-- row -->
+
+<!--
+ -->
+
+
+
+	</div>
+  </div>
+  <div class="container-narrow">
+  <footer> <p>
+  
+  &copy; 2023 yrq's Blog
+  
+      powered by <a href="http://hexo.io/" target="_blank">Hexo</a>.Theme <a href="https://github.com/Ares-X/hexo-theme-freemind.bithack" target="_blank">freemind.bithack</a>  
+</p>
+ </footer>
+</div> <!-- container-narrow -->
+  
+
+
+  
+<a id="gotop" href="#">   
+  <span>⬆︎TOP</span>
+</a>
+
+<script src="/js/jquery.imagesloaded.min.js"></script>
+<script src="/js/gallery.js"></script>
+<script src="/js/bootstrap.min.js"></script>
+<script src="/js/main.js"></script>
+<script src="/js/search.js"></script> 
+
+
+<link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script type="text/javascript">
+(function($){
+  $('.fancybox').fancybox();
+})(jQuery);
+</script>
+
+
+
+   <script type="text/javascript">      
+     var search_path = "search.xml";
+	 if (search_path.length == 0) {
+	 	search_path = "search.xml";
+	 }
+	 var path = "/" + search_path;
+     searchFunc(path, 'local-search-input', 'local-search-result');
+   </script>
+
+</body>
+   </html>
